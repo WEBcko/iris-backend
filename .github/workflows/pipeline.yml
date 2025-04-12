@@ -70,7 +70,7 @@ jobs:
               sudo docker rm back || true
               sudo docker image prune -f
               sudo docker pull "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
-              sudo docker run --env-file .env -d --name back -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
+              sudo docker run --env-file .env -d --name back -p 5000:5000 "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
             '
           "
           

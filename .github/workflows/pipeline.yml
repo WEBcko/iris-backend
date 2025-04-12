@@ -1,0 +1,88 @@
+name: Flask CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m venv venv
+        . venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+
+    #- name: Run user tests
+    #  run: |
+     #   . venv/bin/activate
+     #   pytest tests/user_test.py --maxfail=1 --disable-warnings -q
+    
+   # - name: Run post tests 
+    #  run: |
+    #    . venv/bin/activate
+     #   pytest tests/comment_test.py --maxfail=1 --disable-warnings -q
+
+  build-and-push:
+    needs: test 
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/blog-backend:latest .
+
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/blog-backend:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    
+    steps:
+    - name: Install sshpass
+      run: sudo apt-get update && sudo apt-get install -y sshpass
+
+    - name: SSH into VPN Server using password
+      run: |
+        sshpass -p '${{ secrets.VM_VPN_PASS }}' ssh -o StrictHostKeyChecking=no "${{ secrets.VM_VPN }}" "
+          
+          sshpass -p '${{ secrets.VM_BACK_PASS }}' ssh -o StrictHostKeyChecking=no "${{ secrets.VM_BACK }}" '
+            
+            cd "${{ secrets.VM_PATH }}"
+            
+            docker compose down
+            
+            docker system prune -af
+            
+            docker compose up -d
+          '
+        "
+
+
+
+        

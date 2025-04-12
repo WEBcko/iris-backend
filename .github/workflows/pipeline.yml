@@ -49,38 +49,28 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
-
-      - name: Install OpenVPN
-        run: |
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y openvpn
-        
-      - name: VPN config
-        run: echo "${{ secrets.VPN_CONFIG }}" > vpn.ovpn
-          
-      - name: Connect VPN
-        run: sudo openvpn --config vpn.ovpn --daemon
-        
+    
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.GCLOUD_SSH_KEY }}" > ~/.ssh/gcloud_key
           chmod 600 ~/.ssh/gcloud_key
-
-      - name: Create .env file
-        run: |
-          echo "SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}" >> .env
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET }}" >> .env
   
       - name: SSH into VM and deploy container
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/gcloud_key ${{ secrets.GCLOUD_USER }}@${{ secrets.GCLOUD_HOST }} << EOF
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-            sudo docker stop back || true
-            sudo docker rm back || true
-            sudo docker image prune -f
-            sudo docker pull "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
-            sudo docker run --env-file .env -d --name back -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
-          EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/gcloud_key ${{ secrets.GCLOUD_USER }}@${{ secrets.GCLOUD_VPN_HOST }} "
+            ssh -o StrictHostKeyChecking=no -i ~/.ssh/gcloud_key ${{ secrets.GCLOUD_USER }}@${{ secrets.GCLOUD_HOST }} '
+
+              echo "SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}" >> .env
+              echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+              echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET }}" >> .env
+
+              echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+              sudo docker stop back || true
+              sudo docker rm back || true
+              sudo docker image prune -f
+              sudo docker pull "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
+              sudo docker run --env-file .env -d --name back -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
+            '
+          "
           

@@ -53,7 +53,7 @@ jobs:
       - name: Install OpenVPN
         run: |
           sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y openvpn
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y openvpn easy-rsa
         
       - name: VPN config
         run: echo "${{ secrets.VPN_CONFIG }}" > vpn.ovpn

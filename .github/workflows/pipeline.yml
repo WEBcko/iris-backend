@@ -59,7 +59,7 @@ jobs:
         run: echo "${{ secrets.VPN_CONFIG }}" > vpn.ovpn
           
       - name: Connect VPN
-        run: sudo nohup openvpn vpn.ovpn > /dev/null 2>&1 &
+        run: sudo openvpn --config vpn.ovpn --daemon
         
       - name: Setup SSH key
         run: |

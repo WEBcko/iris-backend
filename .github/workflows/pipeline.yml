@@ -1,10 +1,8 @@
-name: Flask CI Workflow
+
+name: Build and Push Docker image
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
     branches:
       - main
 
@@ -28,61 +26,58 @@ jobs:
         pip install --upgrade pip
         pip install -r requirements.txt
 
-    #- name: Run user tests
-    #  run: |
-     #   . venv/bin/activate
-     #   pytest tests/user_test.py --maxfail=1 --disable-warnings -q
-    
-   # - name: Run post tests 
-    #  run: |
-    #    . venv/bin/activate
-     #   pytest tests/comment_test.py --maxfail=1 --disable-warnings -q
-
-  build-and-push:
-    needs: test 
+  build:
+    needs: test  
     runs-on: ubuntu-latest
-
+  
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
+      - name: Checkout repository
+        uses: actions/checkout@v4
+  
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+  
+      - name: Debug secrets (temporário)
+        run: |
+          echo "API_URL=${{ secrets.API_URL }}"
+          echo "API_KEY=${{ secrets.API_KEY }}"
+  
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/blog-backend:latest .
-
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/blog-backend:latest
+        run: |
+          docker build -t "${{ secrets.DOCKERHUB_USERNAME }}/back:latest"
+  
+      - name: Push Docker image 
+        run: docker push "${{ secrets.DOCKERHUB_USERNAME }}/back:latest"
 
   deploy:
-    needs: build-and-push
+    needs: build  
     runs-on: ubuntu-latest
-
-    
+  
     steps:
-    - name: Install sshpass
-      run: sudo apt-get update && sudo apt-get install -y sshpass
 
-    - name: SSH into VPN Server using password
-      run: |
-        sshpass -p '${{ secrets.VM_VPN_PASS }}' ssh -o StrictHostKeyChecking=no "${{ secrets.VM_VPN }}" "
-          
-          sshpass -p '${{ secrets.VM_BACK_PASS }}' ssh -o StrictHostKeyChecking=no "${{ secrets.VM_BACK }}" '
-            
-            cd "${{ secrets.VM_PATH }}"
-            
-            docker compose down
-            
-            docker system prune -af
-            
-            docker compose up -d
-          '
-        "
-
-
-
+      - name: Install OpenVPN
+        run: sudo apt-get update && sudo apt-get install -y openvpn   
         
+      - name: VPN config
+        run: echo "${{ secrets.VPN_CONFIG }}" > vpn.ovpn
+          
+      - name: Connect VPN
+        run: sudo openvpn vpn.ovpn
+        
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCLOUD_SSH_KEY }}" > ~/.ssh/gcloud_key
+          chmod 600 ~/.ssh/gcloud_key
+  
+      - name: SSH into VM and deploy container
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/gcloud_key ${{ secrets.GCLOUD_USER }}@${{ secrets.GCLOUD_HOST }} << EOF
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            sudo docker stop back || true
+            sudo docker rm back || true
+            sudo docker image prune -f
+            sudo docker pull "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
+            sudo docker run -d --name back -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
+          EOF
+          

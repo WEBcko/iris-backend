@@ -36,12 +36,7 @@ jobs:
   
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-  
-      - name: Debug secrets (temporário)
-        run: |
-          echo "API_URL=${{ secrets.API_URL }}"
-          echo "API_KEY=${{ secrets.API_KEY }}"
-  
+          
       - name: Build Docker image
         run: |
           docker build -t "${{ secrets.DOCKERHUB_USERNAME }}/back:latest" .
@@ -69,6 +64,12 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.GCLOUD_SSH_KEY }}" > ~/.ssh/gcloud_key
           chmod 600 ~/.ssh/gcloud_key
+
+      - name: Create .env file
+        run: |
+          echo "SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}" >> .env
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET }}" >> .env
   
       - name: SSH into VM and deploy container
         run: |
@@ -78,6 +79,6 @@ jobs:
             sudo docker rm back || true
             sudo docker image prune -f
             sudo docker pull "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
-            sudo docker run -d --name back -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
+            sudo docker run --env-file .env -d --name back -p 3000:3000 "${{ secrets.DOCKERHUB_USERNAME }}"/back:latest
           EOF
           

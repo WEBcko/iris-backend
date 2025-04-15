@@ -25,6 +25,9 @@ jobs:
         . venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
+        python user_test.py
+        python post_test.py
+        python comment_test.py
 
   build:
     needs: test  

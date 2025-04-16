@@ -61,6 +61,7 @@ class PostService:
         
         return [
             {
+                "teste" : "teste",
                 "id": post.id,
                 "title": post.title,
                 "description": post.description,

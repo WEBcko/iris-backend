@@ -41,14 +41,20 @@ jobs:
 
       - name: Run user tests
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost/blogdb
+          POSTGRES_DB: blogdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: localhost
         run: |
           . venv/bin/activate
           pytest tests/user_test.py --maxfail=1 --disable-warnings -q
 
       - name: Run post tests
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost/blogdb
+          POSTGRES_DB: blogdb
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST: localhost
         run: |
           . venv/bin/activate
           pytest tests/comment_test.py --maxfail=1 --disable-warnings -q

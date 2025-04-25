@@ -7,7 +7,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "chave-secreta")
-    SQLALCHEMY_DATABASE_URI = {os.getenv(f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}/{POSTGRES_DB}', "postgresql://postgres:postgres@10.0.1.3/blogdb")}
+    SQLALCHEMY_DATABASE_URI = os.getenv('postgresql://POSTGRES_USER:POSTGRES_PASSWORD@POSTGRES_HOST/POSTGRES_DB', "postgresql://postgres:postgres@10.0.1.3/blogdb")
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "jwt-secreto")

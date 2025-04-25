@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:13
@@ -18,12 +19,17 @@ jobs:
           POSTGRES_DB: blogdb
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_HOST: localhost
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
+    env:
+      POSTGRES_DB: blogdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: localhost
 
     steps:
       - uses: actions/checkout@v3
@@ -40,21 +46,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run user tests
-        env:
-          POSTGRES_DB: blogdb
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_HOST: localhost
         run: |
           . venv/bin/activate
           pytest tests/user_test.py --maxfail=1 --disable-warnings -q
 
       - name: Run post tests
-        env:
-          POSTGRES_DB: blogdb
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_HOST: localhost
         run: |
           . venv/bin/activate
           pytest tests/comment_test.py --maxfail=1 --disable-warnings -q

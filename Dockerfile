@@ -22,5 +22,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["flask", "db", "upgrade"]
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD flask db upgrade && flask run --host=0.0.0.0

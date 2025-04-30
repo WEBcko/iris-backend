@@ -22,4 +22,10 @@ COPY . .
 
 EXPOSE 5000
 
-CMD flask db upgrade && flask run --host=0.0.0.0
+RUN flask db init
+
+RUN flask db migrate -m "Initial migration"
+
+RUN flask db upgrade
+
+CMD ["flask", "run", "--host=0.0.0.0"]

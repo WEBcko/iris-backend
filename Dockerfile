@@ -22,10 +22,10 @@ COPY . .
 
 EXPOSE 5000
 
-RUN flask db init
+CMD ["flask", "db", "init"]
 
-RUN flask db migrate -m "Initial migration"
+CMD ["flask", "db", "migrate", "-m", "'Initial migration'"]
 
-RUN flask db upgrade
+CMD ["flask", "db", "upgrade"]
 
 CMD ["flask", "run", "--host=0.0.0.0"]

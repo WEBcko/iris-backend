@@ -22,11 +22,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["echo", "'AAAAAAAA'"]
-CMD ["flask", "db", "init"]
-CMD ["echo", "'BBBBBBBB'"]
-CMD ["flask", "db", "migrate", "-m", "'Initial migration'"]
-CMD ["echo", "'CCCCCCCC'"]
-CMD ["flask", "db", "upgrade"]
-CMD ["echo", "'DDDDDDDD'"]
-CMD ["flask", "run", "--host=0.0.0.0"]
+ENTRYPOINT ["./entrypoint.sh"]

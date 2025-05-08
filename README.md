@@ -16,21 +16,18 @@ Este repositório representa a API backend do projeto Iris, construída com **Fl
 
 ## 🌱 Fluxo de Branches
 
-- `main`
-  - Branch principal com código em produção.
-- `develop`
-  - Branch de integração contínua.
-- `feature/*`
-  - Branches temporárias para desenvolvimento de novas funcionalidades.
-- `hotfix/*`
-  - Correções emergenciais partindo da `main`.
-
-Fluxo padrão:
-
-1. Desenvolver em `feature/*`
-2. Merge para `develop` após revisão
-3. Merge de `develop` para `main` para release
-
+```mermaid
+gitGraph
+   commit id: "main"
+   branch develop
+   commit id: "dev commit"
+   branch feature/login
+   commit id: "login implementado"
+   checkout develop
+   merge feature/login
+   checkout main
+   merge develop
+```
 ---
 
 ### ⚙️ Estrutura do Pipeline (CI/CD)

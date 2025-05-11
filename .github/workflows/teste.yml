@@ -1,0 +1,16 @@
+  elif [[ "${GITHUB_REF}" == "refs/heads/release-"* ]]; then
+
+            # Send Email on release branch
+            - name: Send Email
+              uses: dawidd6/action-send-mail@v3
+              with:
+                server_address: smtp.gmail.com
+                server_port: 587
+                username: testefaculdade2025@gmail.com
+                password: faculdadeteste2025@
+                subject: Pipeline Status
+                to: amira.hsleiman5@gmail.com
+                from: GitHub Actions
+                body: |
+                  A pipeline de backend foi concluída com sucesso!
+          fi

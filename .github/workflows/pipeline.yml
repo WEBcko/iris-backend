@@ -103,9 +103,6 @@ jobs:
             kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${GITHUB_SHA}
           
           elif [[ "${GITHUB_REF}" == "refs/heads/release-"* ]]; then
-            gcloud container clusters get-credentials staging --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
-            kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_staging
-            kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${GITHUB_SHA}
 
             # Send Email on release branch
             - name: Send Email

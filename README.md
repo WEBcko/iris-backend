@@ -20,13 +20,18 @@ Este repositório representa a API backend do projeto Iris dentro de um cluster 
 gitGraph
    commit id: "main"
    branch develop
+   checkout develop
    commit id: "dev commit"
    branch feature/login
+   checkout feature/login
    commit id: "login implementado"
    checkout develop
-   merge release
+   merge feature/login
+   branch release
+   checkout release
+   commit id: "release commit"
    checkout main
-   merge develop
+   merge release
 ```
 ---
 

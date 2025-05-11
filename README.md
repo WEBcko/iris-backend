@@ -1,6 +1,6 @@
 # 📦 Backend Iris - Blog API
 
-Este repositório representa a API backend do projeto Iris, construída com **Flask**, persistência em **PostgreSQL**, e orquestrada com **Docker Compose**.
+Este repositório representa a API backend do projeto Iris dentro de um cluster GKE da Google Cloud, construída com **Flask**, persistência em **PostgreSQL**, e orquestrada com **Docker Compose**.
 
 ---
 
@@ -10,7 +10,7 @@ Este repositório representa a API backend do projeto Iris, construída com **Fl
 - PostgreSQL
 - Docker & Docker Compose
 - GitHub Actions
-- NGINX (reverse proxy)
+- Kubernets
 
 ---
 
@@ -24,7 +24,7 @@ gitGraph
    branch feature/login
    commit id: "login implementado"
    checkout develop
-   merge feature/login
+   merge release
    checkout main
    merge develop
 ```
@@ -32,7 +32,7 @@ gitGraph
 
 ### ⚙️ Estrutura do Pipeline (CI/CD)
 
-Pipeline automatizado com GitHub Actions, disparado em push para a `main`.
+Pipeline automatizado com GitHub Actions, disparado em push para a `main` e `develop`.
 
 #### 1. `test`
 - Inicia container PostgreSQL
@@ -43,15 +43,14 @@ Pipeline automatizado com GitHub Actions, disparado em push para a `main`.
   - `pytest tests/comment_test.py`
 
 #### 2. `build`
-- Realiza login no Docker Hub
-- Gera imagem `back:latest` via `docker build`
-- Publica imagem para Docker Hub
+- Realiza conexão com Google Cloud através de service account
+- Atualiza a imagem do artifact registery
 
 #### 3. `deploy`
-- Conecta via SSH a uma VM (Google Cloud)
-- Cria dinamicamente o arquivo `.env`
-- Faz pull da imagem `back:latest`
-- Reinicia o container backend com as novas configurações e variáveis de ambiente
+- Faz deploy no Google Kubernetes Engine no cluster respectivo à branch atualizada. 
+
+#### 4. `Release`
+- Caso o push vá para a release será enviado um e-mail para notificar sobre a nova versão. 
 
 ---
 

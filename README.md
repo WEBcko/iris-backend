@@ -1,6 +1,6 @@
 # 📦 Backend Iris - Blog API
 
-Este repositório representa a API backend do projeto Iris, construída com **Flask**, persistência em **PostgreSQL**, e orquestrada com **Docker Compose**.
+Este repositório representa a API backend do projeto Iris dentro de um cluster GKE da Google Cloud, construída com **Flask**, persistência em **PostgreSQL**, e orquestrada com **Docker Compose**.
 
 ---
 
@@ -10,32 +10,34 @@ Este repositório representa a API backend do projeto Iris, construída com **Fl
 - PostgreSQL
 - Docker & Docker Compose
 - GitHub Actions
-- NGINX (reverse proxy)
+- Kubernets
 
 ---
 
 ## 🌱 Fluxo de Branches
 
-- `main`
-  - Branch principal com código em produção.
-- `develop`
-  - Branch de integração contínua.
-- `feature/*`
-  - Branches temporárias para desenvolvimento de novas funcionalidades.
-- `hotfix/*`
-  - Correções emergenciais partindo da `main`.
-
-Fluxo padrão:
-
-1. Desenvolver em `feature/*`
-2. Merge para `develop` após revisão
-3. Merge de `develop` para `main` para release
-
+```mermaid
+gitGraph
+   commit id: "main"
+   branch develop
+   checkout develop
+   commit id: "dev commit"
+   branch feature/login
+   checkout feature/login
+   commit id: "login implementado"
+   checkout develop
+   merge feature/login
+   branch release
+   checkout release
+   commit id: "release commit"
+   checkout main
+   merge release
+```
 ---
 
 ### ⚙️ Estrutura do Pipeline (CI/CD)
 
-Pipeline automatizado com GitHub Actions, disparado em push para a `main`.
+Pipeline automatizado com GitHub Actions, disparado em push para a `main` e `develop`.
 
 #### 1. `test`
 - Inicia container PostgreSQL
@@ -46,15 +48,14 @@ Pipeline automatizado com GitHub Actions, disparado em push para a `main`.
   - `pytest tests/comment_test.py`
 
 #### 2. `build`
-- Realiza login no Docker Hub
-- Gera imagem `back:latest` via `docker build`
-- Publica imagem para Docker Hub
+- Realiza conexão com Google Cloud através de service account
+- Atualiza a imagem do artifact registery
 
 #### 3. `deploy`
-- Conecta via SSH a uma VM (Google Cloud)
-- Cria dinamicamente o arquivo `.env`
-- Faz pull da imagem `back:latest`
-- Reinicia o container backend com as novas configurações e variáveis de ambiente
+- Faz deploy no Google Kubernetes Engine no cluster respectivo à branch atualizada. 
+
+#### 4. `Release`
+- Caso o push vá para a release será enviado um e-mail para notificar sobre a nova versão. 
 
 ---
 

@@ -109,5 +109,5 @@ jobs:
       
       - name: Release Branch
         if: startsWith(github.ref, 'refs/heads/release-')
-        run: echo "A imagem da Release branch foi enviado ao Artifact Registry!"
+        run: echo "A imagem da Release branch foi enviado ao Artifact Registry! "
 

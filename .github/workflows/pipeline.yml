@@ -90,31 +90,31 @@ jobs:
           docker build -t us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${GITHUB_SHA} .
           docker push us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${GITHUB_SHA}
 
-      - name: Deploy to Kubernetes
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/main'
         run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            gcloud container clusters get-credentials production --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
-            kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_production
-            kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${GITHUB_SHA}
-          
-          elif [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
-            gcloud container clusters get-credentials stage --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
-            kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_stage
-            kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${GITHUB_SHA}
-          
-          elif [[ "${GITHUB_REF}" == "refs/heads/release-"* ]]; then
+          gcloud container clusters get-credentials production --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
+          kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_production
+          kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${{ github.sha }}
+      
+      - name: Deploy to Staging
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          gcloud container clusters get-credentials stage --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
+          kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_stage
+          kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${{ github.sha }}
+      
+      - name: Send Email on Release Branch
+        if: startsWith(github.ref, 'refs/heads/release-')
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: Pipeline Status
+          to: erno9845@gmail.com
+          from: GitHub Actions
+          body: |
+            A pipeline de backend foi concluída com sucesso!
 
-            # Send Email on release branch
-            - name: Send Email
-              uses: dawidd6/action-send-mail@v3
-              with:
-                server_address: smtp.gmail.com
-                server_port: 587
-                username: ${{ secrets.EMAIL_USERNAME }}
-                password: ${{ secrets.EMAIL_PASSWORD }}
-                subject: Pipeline Status
-                to: erno9845@gmail.com
-                from: GitHub Actions
-                body: |
-                  A pipeline de backend foi concluída com sucesso!
-          fi

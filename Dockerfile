@@ -21,11 +21,10 @@ RUN chmod +x entrypoint.sh
 EXPOSE 5000
 
 CMD bash -c ' \
-    if [ ! -d "migrations" ]; then \
-      echo "==> Diretório de migrations não encontrado. Inicializando..."; \
-      flask db init && flask db migrate -m "initial migration"; \
-    else \
-      echo "==> Diretório de migrations já existe. Pulando init e migrate."; \
-    fi && \
-    flask db upgrade && \
-    flask run --host=0.0.0.0'
+  if [ ! -d "migrations" ]; then \
+    echo "==> Diretório de migrations não encontrado. Inicializando..."; \
+    flask db init && flask db migrate -m "initial migration"; \
+  fi && \
+  flask db upgrade || flask db stamp head && \
+  flask run --host=0.0.0.0'
+

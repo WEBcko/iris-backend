@@ -62,7 +62,6 @@ class PostService:
         return [
             {
                 "AAAAA" : "BBBBB",
-                "CCCCC" : "DDDDD",
                 "id": post.id,
                 "title": post.title,
                 "description": post.description,

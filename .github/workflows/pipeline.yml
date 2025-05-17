@@ -8,9 +8,10 @@ on:
       - develop
       - 'release-*'
 
-
 jobs:
   test:
+    if: |
+      github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release-')
     runs-on: ubuntu-latest
 
     services:
@@ -59,7 +60,8 @@ jobs:
           pytest tests/comment_test.py --maxfail=1 --disable-warnings -q
           
   build_and_deploy:
-    needs: test
+    needs: [test]
+    if: always()
     runs-on: ubuntu-latest
     environment: ${{ github.ref }}
 

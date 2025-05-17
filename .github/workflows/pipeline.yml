@@ -8,9 +8,10 @@ on:
       - develop
       - 'release-*'
 
-
 jobs:
   test:
+    if: |
+      github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release-')
     runs-on: ubuntu-latest
 
     services:
@@ -59,7 +60,8 @@ jobs:
           pytest tests/comment_test.py --maxfail=1 --disable-warnings -q
           
   build_and_deploy:
-    needs: test
+    needs: [test]
+    if: always()
     runs-on: ubuntu-latest
     environment: ${{ github.ref }}
 
@@ -107,17 +109,7 @@ jobs:
           kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_stage
           kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${{ github.sha }}
       
-      - name: Send Email on Release Branch
+      - name: Release Branch
         if: startsWith(github.ref, 'refs/heads/release-')
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Pipeline Status
-          to: erno9845@gmail.com
-          from: GitHub Actions
-          body: |
-            A pipeline de backend foi concluída com sucesso!
+        run: echo "A imagem da Release branch foi enviado ao Artifact Registry! "
 

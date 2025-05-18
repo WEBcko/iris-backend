@@ -45,6 +45,10 @@ def get_profile_image(user_id):
     
     return jsonify({"image_url": image_url})
 
+@user_controller.route("/healthcheck")
+def healthcheck():
+    return "OK", 200
+    
 @user_controller.route('/uploads/profile_pictures/<filename>')
 def serve_profile_picture(filename):
     """Serve a imagem do diretório de perfil"""

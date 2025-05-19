@@ -98,8 +98,8 @@ jobs:
       - name: Deploy to Production
         if: github.ref == 'refs/heads/main'
         run: |
-          gcloud container clusters get-credentials production --zone us-central1 --project ${{ secrets.GCLOUD_PROJECT }}
-          kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-central1_production
+          gcloud container clusters get-credentials production --zone us-east1 --project ${{ secrets.GCLOUD_PROJECT }}
+          kubectl config use-context gke_${{ secrets.GCLOUD_PROJECT }}_us-east1_producao
           kubectl set image deployment/back back=us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT }}/back/back:${{ github.sha }}
       
       - name: Deploy to Staging

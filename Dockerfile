@@ -18,4 +18,4 @@ RUN chmod +x entrypoint.sh
 
 EXPOSE 5000
 
-CMD ["python3", "run.py", "--host=0.0.0.0"]
+CMD ["flask", "run", "--host=0.0.0.0"]

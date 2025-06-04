@@ -4,12 +4,28 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 import os
-from flask_migrate import Migrate
+from flask_migrate import Migrate, migrate, upgrade, init
 
 # Inicializando extensões
 db = SQLAlchemy()
 jwt = JWTManager()
 migrate = Migrate()
+
+def run_migrations():
+    """Executa as migrations automaticamente ao iniciar."""
+    with app.app_context():
+        migrations_folder = os.path.join(os.getcwd(), "migrations")
+
+        if not os.path.exists(migrations_folder):
+            print("[INFO] Criando diretório de migrations automaticamente...")
+            init()
+
+        print("[INFO] Verificando se há mudanças no banco...")
+        migrate(message="Automated migration")
+
+        print("[INFO] Aplicando migrations ao banco de dados...")
+        upgrade()
+        print("[INFO] Migrations aplicadas com sucesso!")
 
 def create_app():
     app = Flask(__name__)
@@ -41,6 +57,8 @@ def create_app():
     app.register_blueprint(comment_controller, url_prefix="/api/comments")
     app.register_blueprint(user_controller, url_prefix="/api/user")
 
+    run_migrations()
+    
     return app
 
 # Adicionando a validação da blacklist de tokens

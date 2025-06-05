@@ -11,7 +11,7 @@ db = SQLAlchemy()
 jwt = JWTManager()
 migrate = Migrate()
 
-def run_migrations():
+def run_migrations(app):
     """Executa as migrations automaticamente ao iniciar."""
     with app.app_context():
         migrations_folder = os.path.join(os.getcwd(), "migrations")
@@ -57,7 +57,7 @@ def create_app():
     app.register_blueprint(comment_controller, url_prefix="/api/comments")
     app.register_blueprint(user_controller, url_prefix="/api/user")
 
-    run_migrations()
+    run_migrations(app)
     
     return app
 

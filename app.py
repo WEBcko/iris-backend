@@ -9,7 +9,7 @@ from flask_migrate import Migrate, migrate, upgrade, init
 # Inicializando extensões
 db = SQLAlchemy()
 jwt = JWTManager()
-migrate = Migrate()
+migrator = Migrate()
 
 def run_migrations(app):
     """Executa as migrations automaticamente ao iniciar."""
@@ -35,7 +35,7 @@ def create_app():
     db.init_app(app)
     jwt.init_app(app)
     CORS(app)  # Permitir conexões do frontend
-    migrate.init_app(app, db)  # Configura o Flask-Migrate para o banco de dados
+    migrator.init_app(app, db)  # Configura o Flask-Migrate para o banco de dados
 
     # Configuração de onde as imagens serão armazenadas
     IMAGE_FOLDER = os.path.join(os.getcwd(), "uploads")

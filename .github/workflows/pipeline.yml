@@ -78,7 +78,7 @@ jobs:
           if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             echo "PROJECT_ID=GCLOUD_PROJECT" >> $GITHUB_ENV
             echo "CREDENTIALS=GKE_SECRET" >> $GITHUB_ENV
-          elif [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+          elif [[ "${GITHUB_REF}" == "refs/heads/develop" || "${GITHUB_REF}" =~ refs/heads/release-.* ]]; then
             echo "PROJECT_ID=GCLOUD_PROJECT_STAGE" >> $GITHUB_ENV
             echo "CREDENTIALS=GKE_SECRET_STAGE" >> $GITHUB_ENV
           fi
@@ -110,7 +110,7 @@ jobs:
 
 
       - name: Build Docker Image stage
-        if: github.ref == 'refs/heads/develop'
+        if: startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/release-')
         run: |
           gcloud auth configure-docker us-central1-docker.pkg.dev
           docker build -t us-central1-docker.pkg.dev/${{ secrets.GCLOUD_PROJECT_STAGE }}/back/back:${GITHUB_SHA} .

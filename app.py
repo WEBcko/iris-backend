@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 import os
-from flask_migrate import Migrate, migrate, upgrade, init
+from flask_migrate import Migrate, migrate as flask_migrate, upgrade, init
 
 # Inicializando extensões
 db = SQLAlchemy()
@@ -20,8 +20,8 @@ def run_migrations(app):
             print("[INFO] Criando diretório de migrations automaticamente...")
             init()
 
-        print("[INFO] Verificando se há mudanças no banco...")
-        migrate(message="Automated migration")
+        print("[INFO] Gerando nova migration, se necessário...")
+        flask_migrate(message="Automated migration")
 
         print("[INFO] Aplicando migrations ao banco de dados...")
         upgrade()
@@ -29,39 +29,35 @@ def run_migrations(app):
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)  # Carrega as configurações do arquivo config.py
+    app.config.from_object(Config)
 
-    # Inicializando as extensões
+    # Inicializando extensões
     db.init_app(app)
     jwt.init_app(app)
-    CORS(app)  # Permitir conexões do frontend
-    migrator.init_app(app, db)  # Configura o Flask-Migrate para o banco de dados
+    CORS(app)
+    migrator.init_app(app, db)
 
-    # Configuração de onde as imagens serão armazenadas
     IMAGE_FOLDER = os.path.join(os.getcwd(), "uploads")
- # Rota para servir as imagens # Rota para servir as imagens # Rota para servir as imagens # Rota para servir as imagens
-    # Rota para servir as imagens
+
     @app.route('/uploads/<path:filename>')
     def serve_image(filename):
         return send_from_directory(IMAGE_FOLDER, filename)
 
-    # Importando os blueprints e registrando no aplicativo
+    # Blueprints
     from flask_auth.routes import auth
     from controllers.post_controller import post_controller
     from controllers.comment_controller import comment_controller
     from controllers.user_controller import user_controller
-    
-    # Registrando os blueprints com o prefixo adequado
+
     app.register_blueprint(auth, url_prefix="/api")
     app.register_blueprint(post_controller, url_prefix="/api/posts")
     app.register_blueprint(comment_controller, url_prefix="/api/comments")
     app.register_blueprint(user_controller, url_prefix="/api/user")
 
     run_migrations(app)
-    
+
     return app
 
-# Adicionando a validação da blacklist de tokens
 @jwt.token_in_blocklist_loader
 def check_if_token_revoked(jwt_header, jwt_data):
     from models.models import RevokedToken

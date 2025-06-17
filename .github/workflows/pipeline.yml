@@ -76,19 +76,20 @@ jobs:
         id: set-vars
         run: |
           if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "PROJECT_ID=${{ secrets.GCLOUD_PROJECT }}" >> $GITHUB_OUTPUT
-            echo "CREDENTIALS=${{ secrets.GKE_SECRET }}" >> $GITHUB_OUTPUT
+            echo "PROJECT_ID=GCLOUD_PROJECT" >> $GITHUB_ENV
+            echo "CREDENTIALS=GKE_SECRET" >> $GITHUB_ENV
           elif [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
-            echo "PROJECT_ID=${{ secrets.GCLOUD_PROJECT_STAGE }}" >> $GITHUB_OUTPUT
-            echo "CREDENTIALS=${{ secrets.GKE_SECRET_STAGE }}" >> $GITHUB_OUTPUT
+            echo "PROJECT_ID=GCLOUD_PROJECT_STAGE" >> $GITHUB_ENV
+            echo "CREDENTIALS=GKE_SECRET_STAGE" >> $GITHUB_ENV
           fi
-  
+      
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
-          project_id: ${{ steps.set-vars.outputs.PROJECT_ID }}
-          credentials_json: ${{ steps.set-vars.outputs.CREDENTIALS }}
+          project_id: ${{ secrets[env.PROJECT_ID] }}
+          credentials_json: ${{ secrets[env.CREDENTIALS] }}
           install_components: 'gke-gcloud-auth-plugin'
+
      
       - name: Install gke-gcloud-auth-plugin
         run: |
